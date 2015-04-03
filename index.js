@@ -2,6 +2,9 @@
 
 var Hapi = require('hapi')
   , Boom = require('boom')
+  , Account = require('./models/account.js')
+  , Character = require('./models/character.js')
+  , knex = require('./config.js').knex
   , server = new Hapi.Server();
 
 server.connection({ host: '127.0.0.1', port: 3000 });
@@ -24,6 +27,18 @@ server.route({
   method: 'GET',
   path: '/account',
   handler: function(req, res) {
+    Account.fetchAll().then(function(accounts) {
+      var parsedAccounts = accounts.map(function(account) {
+        return { 
+          account_id: account.attributes.account_id, 
+          account_name: account.attributes.name,
+          link: '{your-service-url}/account/' + account.attributes.name
+        };
+      });
+      res({ accounts: parsedAccounts }); 
+    }).catch(function(e) {
+      res(Boom.wrap(e, 500));
+    });
   }
 });
 
@@ -39,7 +54,13 @@ server.route({
       // reply with error
       res(Boom.wrap(new Error('name parameter is not defined'), 401));
     } else {
-      res('Not implemented yet!');
+      new Account({
+        name: req.payload.name
+      }).save().then(function(account) {
+        res({ account_id: account.id }); 
+      }).catch(function(e) {
+        res(Boom.wrap(e, 401));
+      });
     }
   }
 });
@@ -76,6 +97,12 @@ server.route({
   method: 'DELETE',
   path: '/account/{account_name}',
   handler: function(req, res) {
+    return knex('accounts').where('name', req.params.account_name).del().then(function(numRows) {
+      res();
+    }).catch(function(e) {
+      console.log(e);
+      res(Boom.wrap(e, 500));
+    });
   }
 });
 
