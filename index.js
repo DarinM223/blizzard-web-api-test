@@ -2,6 +2,7 @@
 
 var Hapi = require('hapi')
   , Boom = require('boom')
+  , _ = require('underscore')
   , knex = require('./config.js').knex
   , server = new Hapi.Server();
 
@@ -14,7 +15,7 @@ server.route({
   method: 'GET',
   path: '/about',
   handler: function(req, res) {
-    res({ author: 'Darin Minamoto', source: 'blahblahblah!' });
+    res({ author: 'Darin Minamoto', source: 'http://github.com/DarinM223/blizzard-web-api' });
   }
 });
 
@@ -78,9 +79,16 @@ server.route({
       .join('accounts', 'accounts.account_id', '=', 'characters.account_id')
       .where('accounts.account_name', req.params.account_name)
       .select('characters.name', 'characters.level', 'characters.race', 'characters.class',
-              'characters.faction')
+              'characters.faction', 'characters.account_id')
       .then(function(characters) {
-        res(characters);
+        if (characters.length > 0) {
+          var parsedCharacters = characters.map(function(character) {
+            return _.omit(character, 'account_id');
+          });
+          res({ account_id: characters[0].account_id, characters: parsedCharacters });
+        } else {
+          res(characters);
+        }
       }).catch(function(e) {
         console.log(e);
         res(Boom.wrap(e, 500));
@@ -105,8 +113,7 @@ server.route({
       .select('account_id').then(function(result) {
 
       if (result.length <= 0) {
-        res(Boom.wrap(new Error('Account does not exist'), 401));
-        return;
+        throw new Error('Account does not exist');
       } 
 
       return knex('characters').insert({
@@ -136,8 +143,12 @@ server.route({
   method: 'DELETE',
   path: '/account/{account_name}',
   handler: function(req, res) {
-    return knex('accounts').where('name', req.params.account_name).del().then(function(numRows) {
-      res();
+    return knex('accounts').where({ account_name: req.params.account_name }).del().then(function(numRows) {
+      if (numRows > 0) {
+        res();
+      } else {
+        res(Boom.wrap(new Error('Account does not eist'), 401));
+      }
     }).catch(function(e) {
       console.log(e);
       res(Boom.wrap(e, 500));
@@ -152,6 +163,18 @@ server.route({
   method: 'DELETE',
   path: '/account/{account_name}/characters/{character_name}',
   handler: function(req, res) {
+    knex('characters')
+      .where('name', req.params.character_name)
+      .whereIn('account_id', function() {
+        this.select('account_id').from('accounts').where('account_name', req.params.account_name);
+      })
+      .del().then(function(numRows) {
+        if (numRows > 0) {
+          res();
+        } else {
+          res(Boom.wrap(new Error('Character does not exist'), 401));
+        }
+      });
   }
 });
 
