@@ -74,6 +74,17 @@ server.route({
   method: 'GET',
   path: '/account/{account_name}/characters',
   handler: function(req, res) {
+    knex('characters')
+      .join('accounts', 'accounts.account_id', '=', 'characters.account_id')
+      .where('accounts.account_name', req.params.account_name)
+      .select('characters.name', 'characters.level', 'characters.race', 'characters.class',
+              'characters.faction')
+      .then(function(characters) {
+        res(characters);
+      }).catch(function(e) {
+        console.log(e);
+        res(Boom.wrap(e, 500));
+      });
   }
 });
 
@@ -89,6 +100,32 @@ server.route({
   method: 'POST',
   path: '/account/{account_name}/characters',
   handler: function(req, res) {
+    // TODO: add validation
+    knex('accounts').where('account_name', req.params.account_name)
+      .select('account_id').then(function(result) {
+
+      if (result.length <= 0) {
+        res(Boom.wrap(new Error('Account does not exist'), 401));
+        return;
+      } 
+
+      return knex('characters').insert({
+        name: req.payload.name,
+        level: req.payload.level,
+        race: req.payload.race,
+        'class': req.payload['class'],
+        faction: req.payload.faction,
+        account_id: result[0].account_id
+      }, true);
+    }).then(function(a) {
+      if (a.length > 0) {
+        res({ character_id: a[0] });
+      } else {
+        res(Boom.wrap(new Error(), 401));
+      }
+    }).catch(function(e) {
+      res(Boom.wrap(e, 401));
+    });
   }
 });
 
