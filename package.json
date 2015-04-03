@@ -1,0 +1,15 @@
+{
+  "name": "blizzard_web_api_take_home_test",
+  "version": "1.0.0",
+  "description": "Blizzard Platform Services Web API Take Home Test",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "author": "Darin Minamoto",
+  "license": "MIT",
+  "dependencies": {
+    "hapi": "^8.4.0",
+    "knex": "^0.7.6"
+  }
+}
