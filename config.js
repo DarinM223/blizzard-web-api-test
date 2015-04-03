@@ -5,10 +5,8 @@
  */ 
 
 var knexfile = require('./knexfile.js')
-  , knex = require('knex')(knexfile.development)
-  , bookshelf = require('bookshelf')(knex);
+  , knex = require('knex')(knexfile.development);
 
 module.exports = {
-  knex: knex,
-  bookshelf: bookshelf
+  knex: knex
 };

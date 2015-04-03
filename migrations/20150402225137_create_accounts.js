@@ -3,7 +3,7 @@
 exports.up = function(knex, Promise) {
   return knex.schema.createTable('accounts', function(t) {
     t.increments('account_id').primary();
-    t.string('name').notNull().unique();
+    t.string('account_name').notNull().unique();
   });
 };
 

@@ -9,7 +9,6 @@
   "author": "Darin Minamoto",
   "license": "MIT",
   "dependencies": {
-    "bookshelf": "^0.7.9",
     "boom": "^2.7.0",
     "hapi": "^8.4.0",
     "knex": "^0.7.6",
