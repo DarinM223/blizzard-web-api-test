@@ -8,6 +8,7 @@ exports.up = function(knex, Promise) {
     t.string('race').notNull();
     t.string('class').notNull();
     t.string('faction').notNull();
+    t.integer('character_type').nullable();
     t.integer('account_id').unsigned().notNullable().references('account_id').inTable('accounts');
   }); 
 };
