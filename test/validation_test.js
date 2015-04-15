@@ -4,6 +4,49 @@ var expect = require('chai').expect
   , Validator = require('../validation.js');
 
 describe('Testing character validation', function() {
+  it('should throw error if character is missing name key', function() {
+    expect(Validator.validateCharacter.bind(null, {
+      level: 1,
+      race: 'Orc',
+      faction: 'Horde',
+      'class': 'Warrior'
+    }))
+    .to.throw('Character does not have key: name');
+  });
+
+  it('should throw error if character has invalid race', function() {
+    expect(Validator.validateCharacter.bind(null, {
+      name: 'Hello',
+      level: 1,
+      race: 'LOL',
+      faction: 'Horde',
+      'class': 'Warrior'
+    }))
+    .to.throw('Character has invalid race');
+  });
+
+  it('should throw error if character has invalid class', function() {
+    expect(Validator.validateCharacter.bind(null, {
+      name: 'Hello',
+      level: 1,
+      race: 'Orc',
+      faction: 'blahblahblah',
+      'class': 'Warrior'
+    }))
+    .to.throw('Character has invalid faction');
+  });
+
+  it('should throw error if character has invalid faction', function() {
+    expect(Validator.validateCharacter.bind(null, {
+      name: 'Hello',
+      level: 1,
+      race: 'Orc',
+      faction: 'Horde',
+      'class': 'LOL'
+    }))
+    .to.throw('Character has invalid class');
+  });
+
   it('should throw error if character race is Orc and its faction is not Horde', function() {
     expect(Validator.validateCharacter.bind(null, { 
       name: 'Test',

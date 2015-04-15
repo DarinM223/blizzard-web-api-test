@@ -25,4 +25,7 @@ describe('Testing api', function() {
       done();
     });
   });
+
+  describe('Testing /account route', function() {
+  });
 });

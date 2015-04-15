@@ -1,5 +1,10 @@
 'use strict';
 
+var Boom = require('boom')
+  , _ = require('underscore')
+  , knex = require('./config.js').knex
+  , Validator = require('./validation.js');
+
 module.exports = function(server) {
   /**
    * Returns the author and the source link of the api
@@ -101,14 +106,16 @@ module.exports = function(server) {
     method: 'POST',
     path: '/account/{account_name}/characters',
     handler: function(req, res) {
-      // TODO: add validation
       knex('accounts').where('account_name', req.params.account_name)
         .select('account_id').then(function(result) {
   
         if (result.length <= 0) {
           throw new Error('Account does not exist');
         } 
-  
+
+        // will throw error if validation fails
+        Validator.validateCharacter(req.payload);
+
         return knex('characters').insert({
           name: req.payload.name,
           level: req.payload.level,
